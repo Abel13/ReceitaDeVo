@@ -1,0 +1,59 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function maxSize(mb) {
+      return request.resource.size <= mb * 1024 * 1024;
+    }
+
+    // ── Avatares ─────────────────────────────────────────────────────────────
+    // Caminho: avatars/{userId}.webp
+
+    match /avatars/{fileName} {
+      allow read: if true;
+      allow write: if isAuth()
+          && isImage()
+          && maxSize(2)
+          && fileName == request.auth.uid + '.webp';
+      allow delete: if isAuth()
+          && fileName == request.auth.uid + '.webp';
+    }
+
+    // ── Fotos de receitas ─────────────────────────────────────────────────────
+    // Caminho: recipes/{recipeId}/photo_{index}.webp
+    //          recipes/{recipeId}/thumb_{index}.webp
+
+    match /recipes/{recipeId}/{fileName} {
+      allow read: if true;
+
+      // Apenas usuário autenticado pode fazer upload (dono da receita é validado no Firestore)
+      allow write: if isAuth()
+          && isImage()
+          && maxSize(5)
+          && (fileName.matches('photo_[0-9]+\\.webp') || fileName.matches('thumb_[0-9]+\\.webp'));
+
+      allow delete: if isAuth();
+    }
+
+    // ── Bloqueia todo o resto ─────────────────────────────────────────────────
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

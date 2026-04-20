@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply font-body text-cafe bg-creme antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Scrollbar sutil */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-cafe-subtle/50 rounded-full; }
+}
+
+@layer components {
+  /* Focus ring global para acessibilidade */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracota focus-visible:ring-offset-2 focus-visible:ring-offset-creme;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-quentinho animate-pulse rounded-lg;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: 'Playfair Display', Georgia, serif; }
+}
