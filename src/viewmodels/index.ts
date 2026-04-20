@@ -75,15 +75,20 @@ export const useRecipeListViewModel = (category?: string, difficulty?: string) =
 
   const fetchPage = useCallback(async (reset = false) => {
     setLoading(true)
-    const { recipes: fetched, cursor } = await recipeService.list({
-      category,
-      difficulty,
-      cursor: reset ? undefined : cursorRef.current ?? undefined,
-    })
-    cursorRef.current = cursor
-    setHasMore(fetched.length === 12)
-    setRecipes(prev => reset ? fetched : [...prev, ...fetched])
-    setLoading(false)
+    try {
+      const { recipes: fetched, cursor } = await recipeService.list({
+        category,
+        difficulty,
+        cursor: reset ? undefined : cursorRef.current ?? undefined,
+      })
+      cursorRef.current = cursor
+      setHasMore(fetched.length === 12)
+      setRecipes(prev => reset ? fetched : [...prev, ...fetched])
+    } catch (err) {
+      console.error('[recipeList] Firestore error:', err)
+    } finally {
+      setLoading(false)
+    }
   }, [category, difficulty])
 
   useEffect(() => {
