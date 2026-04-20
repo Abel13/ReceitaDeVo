@@ -137,7 +137,7 @@ const IngredientSearchPage = () => {
   )
 }
 
-const ModeOption = ({ id, label, description, isActive, onSelect }: {
+const ModeOption = ({ label, description, isActive, onSelect }: {
   id: string; label: string; description: string; isActive: boolean; onSelect: () => void
 }) => (
   <button

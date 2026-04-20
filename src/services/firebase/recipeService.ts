@@ -71,7 +71,6 @@ export const recipeService = {
 
   /** Busca textual simples por título (Firestore não tem full-text; usar Algolia em produção) */
   searchByTitle: async (term: string): Promise<Recipe[]> => {
-    const termUpper = term.charAt(0).toUpperCase() + term.slice(1)
     const q = query(
       recipesRef(),
       where('isPublished', '==', true),

@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  PlusCircle, Trash2, GripVertical, Clock, Users,
+  PlusCircle, Trash2, GripVertical, Clock,
   Thermometer, Camera, ChefHat, Package, BookOpen
 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button'
-import { Input, Textarea, Badge } from '@/components/atoms'
+import { Input, Textarea } from '@/components/atoms'
 import { useCreateRecipeViewModel } from '@/viewmodels'
 import type { Ingredient, RecipeStep, DifficultyLevel, StorageMethod, IngredientState } from '@/models'
 import { clsx } from 'clsx'

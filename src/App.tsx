@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { AppRouter } from '@/router'
 import { useAuthViewModel } from '@/viewmodels'
 import '@/styles/globals.css'

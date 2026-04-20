@@ -1,6 +1,6 @@
 import { Heart, Bookmark, MessageCircle, Share2, Clock, Users, ChefHat } from 'lucide-react'
 import { clsx } from 'clsx'
-import { Badge, Avatar, Skeleton, difficultyToBadge, difficultyLabel } from '@/components/atoms'
+import { Badge, Avatar, difficultyToBadge, difficultyLabel } from '@/components/atoms'
 import { useSavedRecipesStore } from '@/store'
 import type { Recipe } from '@/models'
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PlusCircle, BookOpen, Heart, Users, ChefHat } from 'lucide-react'
+import { PlusCircle, BookOpen, Heart, ChefHat } from 'lucide-react'
 import { Avatar, Skeleton } from '@/components/atoms'
 import { Button } from '@/components/atoms/Button'
 import { RecipeGrid } from '@/components/organisms'
