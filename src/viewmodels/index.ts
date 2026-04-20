@@ -107,13 +107,16 @@ export const useRecipeDetailViewModel = (id: string) => {
   const [recipe, setRecipe]     = useState<Recipe | null>(null)
   const [isLoading, setLoading] = useState(true)
   const { user }                = useAuthStore()
-  const { addSaved, removeSaved, isSaved, toggleLike, isLiked } = useSavedRecipesStore()
+  const { addSaved, removeSaved, isSaved } = useSavedRecipesStore()
   const { addToast }            = useUIStore()
 
   useEffect(() => {
     setLoading(true)
     recipeService.getById(id).then(r => { setRecipe(r); setLoading(false) })
   }, [id])
+
+  // Fonte de verdade: likedBy vem do Firestore, não do localStorage
+  const likedByFirestore = user ? (recipe?.likedBy ?? []).includes(user.uid) : false
 
   const handleToggleSaved = useCallback(() => {
     if (!recipe) return
@@ -128,19 +131,29 @@ export const useRecipeDetailViewModel = (id: string) => {
 
   const handleToggleLike = useCallback(async () => {
     if (!recipe || !user) { addToast('Entre para curtir receitas', 'info'); return }
-    const liked = isLiked(recipe.id)
-    toggleLike(recipe.id)
-    if (liked) {
+    const alreadyLiked = recipe.likedBy.includes(user.uid)
+    // Atualização optimista do estado local
+    setRecipe(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        likesCount: alreadyLiked ? prev.likesCount - 1 : prev.likesCount + 1,
+        likedBy: alreadyLiked
+          ? prev.likedBy.filter(uid => uid !== user.uid)
+          : [...prev.likedBy, user.uid],
+      }
+    })
+    if (alreadyLiked) {
       await recipeService.decrementLike(recipe.id, user.uid)
     } else {
       await recipeService.incrementLike(recipe.id, user.uid)
     }
-  }, [recipe, user, isLiked, toggleLike, addToast])
+  }, [recipe, user, addToast])
 
   return {
     recipe, isLoading,
     isSaved:    recipe ? isSaved(recipe.id) : false,
-    isLiked:    recipe ? isLiked(recipe.id) : false,
+    isLiked:    likedByFirestore,
     toggleSaved: handleToggleSaved,
     toggleLike:  handleToggleLike,
   }
@@ -196,7 +209,7 @@ export const useCreateRecipeViewModel = () => {
   const [uploadProgress, setProgress] = useState(0)
 
   const submitRecipe = useCallback(async (
-    data:   Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'thumbUrl' | 'authorId' | 'authorName' | 'authorPhotoURL' | 'likesCount' | 'favoritesCount' | 'commentsCount'>,
+    data:   Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'photos' | 'thumbUrl' | 'authorId' | 'authorName' | 'authorPhotoURL' | 'likesCount' | 'likedBy' | 'favoritesCount' | 'commentsCount'>,
     photos: File[]
   ): Promise<string | null> => {
     if (!user) { addToast('Faça login para publicar', 'error'); return null }
@@ -213,6 +226,7 @@ export const useCreateRecipeViewModel = () => {
       photos:        [],
       thumbUrl:      null,
       likesCount:    0,
+      likedBy:       [],
       favoritesCount: 0,
       commentsCount: 0,
       isPublished:   false,

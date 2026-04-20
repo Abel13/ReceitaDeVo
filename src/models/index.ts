@@ -68,6 +68,7 @@ export interface Recipe {
   thumbUrl:        string | null     // primeira foto otimizada
   tags:            string[]
   likesCount:      number
+  likedBy:         string[]
   favoritesCount:  number
   commentsCount:   number
   isPublished:     boolean

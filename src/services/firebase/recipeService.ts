@@ -20,6 +20,7 @@ const recipesRef = () => collection(firestore, RECIPES_COLLECTION)
 const fromFirestore = (snap: QueryDocumentSnapshot): Recipe => ({
   id: snap.id,
   ...(snap.data() as Omit<Recipe, 'id'>),
+  likedBy:   snap.data().likedBy   ?? [],
   createdAt: snap.data().createdAt?.toDate?.() ?? new Date(),
   updatedAt: snap.data().updatedAt?.toDate?.() ?? new Date(),
 })
