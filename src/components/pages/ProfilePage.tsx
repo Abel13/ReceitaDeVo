@@ -12,11 +12,11 @@ import type { Recipe } from '@/models'
 // ─────────────────────────────────────────────
 //  Page: ProfilePage (dashboard do usuário)
 // ─────────────────────────────────────────────
-type Tab = 'minhas' | 'favoritas' | 'curtidas'
+type Tab = 'minhas' | 'salvas' | 'curtidas'
 
 const ProfilePage = () => {
   const { user, signOut }            = useAuthViewModel()
-  const { favorites, liked }         = useSavedRecipesStore()
+  const { saved, liked }             = useSavedRecipesStore()
   const [tab, setTab]                = useState<Tab>('minhas')
   const [myRecipes, setMyRecipes]    = useState<Recipe[]>([])
   const [isLoading, setLoading]      = useState(true)
@@ -33,8 +33,8 @@ const ProfilePage = () => {
 
   const displayedRecipes: Recipe[] =
     tab === 'minhas'    ? myRecipes :
-    tab === 'favoritas' ? favorites :
-    favorites.filter(r => liked.includes(r.id))
+    tab === 'salvas' ? saved :
+    saved.filter(r => liked.includes(r.id))
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -50,7 +50,7 @@ const ProfilePage = () => {
           <div className="flex gap-5 mt-3">
             <StatItem icon={<ChefHat size={14} />} value={myRecipes.length} label="receitas" />
             <StatItem icon={<Heart size={14} />}   value={liked.length}     label="curtidas" />
-            <StatItem icon={<BookOpen size={14} />} value={favorites.length} label="favoritas" />
+            <StatItem icon={<BookOpen size={14} />} value={saved.length} label="salvas" />
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const ProfilePage = () => {
       <div className="flex gap-1 border-b border-cafe/10">
         {([ 
           { id: 'minhas',    label: 'Minhas receitas', icon: <ChefHat size={14} /> },
-          { id: 'favoritas', label: 'Favoritas',       icon: <BookOpen size={14} /> },
+          { id: 'salvas',    label: 'Salvas',           icon: <BookOpen size={14} /> },
           { id: 'curtidas',  label: 'Curtidas',        icon: <Heart size={14} /> },
         ] as { id: Tab; label: string; icon: React.ReactNode }[]).map(t => (
           <button

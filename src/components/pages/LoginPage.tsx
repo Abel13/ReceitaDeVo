@@ -23,7 +23,7 @@ const LoginPage = () => {
     <div className="space-y-6">
       <div>
         <h2 className="font-display text-xl text-cafe">Bem-vinda(o) de volta</h2>
-        <p className="text-sm text-cafe-muted mt-1">Entre para acessar suas receitas favoritas</p>
+        <p className="text-sm text-cafe-muted mt-1">Entre para acessar suas receitas salvas</p>
       </div>
 
       {error && (

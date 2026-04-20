@@ -107,7 +107,7 @@ export const useRecipeDetailViewModel = (id: string) => {
   const [recipe, setRecipe]     = useState<Recipe | null>(null)
   const [isLoading, setLoading] = useState(true)
   const { user }                = useAuthStore()
-  const { addFavorite, removeFavorite, isFavorite, toggleLike, isLiked } = useSavedRecipesStore()
+  const { addSaved, removeSaved, isSaved, toggleLike, isLiked } = useSavedRecipesStore()
   const { addToast }            = useUIStore()
 
   useEffect(() => {
@@ -115,16 +115,16 @@ export const useRecipeDetailViewModel = (id: string) => {
     recipeService.getById(id).then(r => { setRecipe(r); setLoading(false) })
   }, [id])
 
-  const handleToggleFavorite = useCallback(() => {
+  const handleToggleSaved = useCallback(() => {
     if (!recipe) return
-    if (isFavorite(recipe.id)) {
-      removeFavorite(recipe.id)
-      addToast('Removido dos favoritos', 'info')
+    if (isSaved(recipe.id)) {
+      removeSaved(recipe.id)
+      addToast('Removido das salvas', 'info')
     } else {
-      addFavorite(recipe)
-      addToast('Salvo nos favoritos!')
+      addSaved(recipe)
+      addToast('Receita salva!')
     }
-  }, [recipe, isFavorite, addFavorite, removeFavorite, addToast])
+  }, [recipe, isSaved, addSaved, removeSaved, addToast])
 
   const handleToggleLike = useCallback(async () => {
     if (!recipe || !user) { addToast('Entre para curtir receitas', 'info'); return }
@@ -139,10 +139,10 @@ export const useRecipeDetailViewModel = (id: string) => {
 
   return {
     recipe, isLoading,
-    isFavorite: recipe ? isFavorite(recipe.id) : false,
+    isSaved:    recipe ? isSaved(recipe.id) : false,
     isLiked:    recipe ? isLiked(recipe.id) : false,
-    toggleFavorite: handleToggleFavorite,
-    toggleLike:     handleToggleLike,
+    toggleSaved: handleToggleSaved,
+    toggleLike:  handleToggleLike,
   }
 }
 

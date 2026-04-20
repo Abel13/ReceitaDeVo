@@ -22,36 +22,36 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
 // ─────────────────────────────────────────────
 //  Saved Recipes Store  (persist em localStorage)
-//  Armazena favoritos e receitas curtidas offline
+//  Armazena receitas salvas e curtidas offline
 // ─────────────────────────────────────────────
 interface SavedRecipesState {
-  favorites:     Recipe[]
-  liked:         string[]           // IDs das receitas curtidas
-  addFavorite:   (recipe: Recipe) => void
-  removeFavorite:(id: string) => void
-  isFavorite:    (id: string) => boolean
-  toggleLike:    (id: string) => void
-  isLiked:       (id: string) => boolean
-  clearAll:      () => void
+  saved:       Recipe[]
+  liked:       string[]           // IDs das receitas curtidas
+  addSaved:    (recipe: Recipe) => void
+  removeSaved: (id: string) => void
+  isSaved:     (id: string) => boolean
+  toggleLike:  (id: string) => void
+  isLiked:     (id: string) => boolean
+  clearAll:    () => void
 }
 
 export const useSavedRecipesStore = create<SavedRecipesState>()(
   persist(
     (set, get) => ({
-      favorites: [],
-      liked:     [],
+      saved:  [],
+      liked:  [],
 
-      addFavorite: (recipe) =>
+      addSaved: (recipe) =>
         set((s) => ({
-          favorites: s.favorites.some(f => f.id === recipe.id)
-            ? s.favorites
-            : [recipe, ...s.favorites],
+          saved: s.saved.some(f => f.id === recipe.id)
+            ? s.saved
+            : [recipe, ...s.saved],
         })),
 
-      removeFavorite: (id) =>
-        set((s) => ({ favorites: s.favorites.filter(f => f.id !== id) })),
+      removeSaved: (id) =>
+        set((s) => ({ saved: s.saved.filter(f => f.id !== id) })),
 
-      isFavorite: (id) => get().favorites.some(f => f.id === id),
+      isSaved: (id) => get().saved.some(f => f.id === id),
 
       toggleLike: (id) =>
         set((s) => ({
@@ -62,7 +62,7 @@ export const useSavedRecipesStore = create<SavedRecipesState>()(
 
       isLiked: (id) => get().liked.includes(id),
 
-      clearAll: () => set({ favorites: [], liked: [] }),
+      clearAll: () => set({ saved: [], liked: [] }),
     }),
     {
       name:    'receita-vo-saved',

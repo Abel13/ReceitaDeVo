@@ -8,20 +8,20 @@ import { Button } from '@/components/atoms/Button'
 //  Page: FavoritesPage
 // ─────────────────────────────────────────────
 export const FavoritesPage = () => {
-  const { favorites } = useSavedRecipesStore()
+  const { saved } = useSavedRecipesStore()
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <BookOpen size={22} className="text-terracota" />
-        <h1 className="font-display text-2xl text-cafe">Receitas favoritas</h1>
+        <h1 className="font-display text-2xl text-cafe">Receitas salvas</h1>
       </div>
 
-      {favorites.length === 0 ? (
+      {saved.length === 0 ? (
         <div className="py-20 text-center space-y-4">
           <BookOpen size={48} className="mx-auto text-cafe-subtle/30" />
           <p className="font-display text-lg text-cafe-muted">Nenhuma receita salva ainda</p>
-          <p className="text-sm text-cafe-subtle">Explore o início e salve suas favoritas!</p>
+          <p className="text-sm text-cafe-subtle">Explore o início e salve suas receitas!</p>
           <Link to="/">
             <Button variant="ghost">Explorar receitas</Button>
           </Link>
@@ -29,9 +29,9 @@ export const FavoritesPage = () => {
       ) : (
         <>
           <p className="text-sm text-cafe-muted">
-            {favorites.length} receita{favorites.length !== 1 ? 's' : ''} salva{favorites.length !== 1 ? 's' : ''}
+            {saved.length} receita{saved.length !== 1 ? 's' : ''} salva{saved.length !== 1 ? 's' : ''}
           </p>
-          <RecipeGrid recipes={favorites} />
+          <RecipeGrid recipes={saved} />
         </>
       )}
     </div>

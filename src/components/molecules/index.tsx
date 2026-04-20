@@ -14,13 +14,13 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
-  const { isFavorite, addFavorite, removeFavorite, isLiked, toggleLike } = useSavedRecipesStore()
-  const favorited = isFavorite(recipe.id)
-  const liked     = isLiked(recipe.id)
+  const { isSaved, addSaved, removeSaved, isLiked, toggleLike } = useSavedRecipesStore()
+  const saved  = isSaved(recipe.id)
+  const liked  = isLiked(recipe.id)
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation()
-    favorited ? removeFavorite(recipe.id) : addFavorite(recipe)
+    saved ? removeSaved(recipe.id) : addSaved(recipe)
   }
 
   const handleLike = (e: React.MouseEvent) => {
@@ -44,16 +44,16 @@ export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
           : <div className="h-full w-full flex items-center justify-center"><ChefHat size={48} className="text-cafe-subtle/30" /></div>
         }
         <button
-          onClick={handleFavorite}
-          aria-label={favorited ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
+          onClick={handleSave}
+          aria-label={saved ? 'Remover das salvas' : 'Salvar receita'}
           className={clsx(
             'absolute top-3 right-3 rounded-full p-1.5 transition-all duration-150',
-            favorited
+            saved
               ? 'bg-terracota text-creme'
               : 'bg-white/80 text-cafe-subtle hover:bg-white hover:text-terracota'
           )}
         >
-          <Bookmark size={14} fill={favorited ? 'currentColor' : 'none'} />
+          <Bookmark size={14} fill={saved ? 'currentColor' : 'none'} />
         </button>
       </div>
 

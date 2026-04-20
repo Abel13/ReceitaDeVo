@@ -16,7 +16,7 @@ import { difficultyToBadge, difficultyLabel } from '@/components/atoms'
 const RecipeDetailPage = () => {
   const { id }      = useParams<{ id: string }>()
   const navigate    = useNavigate()
-  const { recipe, isLoading, isFavorite, isLiked, toggleFavorite, toggleLike } =
+  const { recipe, isLoading, isSaved, isLiked, toggleSaved, toggleLike } =
     useRecipeDetailViewModel(id!)
 
   if (isLoading) return <RecipeDetailSkeleton />
@@ -58,10 +58,10 @@ const RecipeDetailPage = () => {
               onClick={toggleLike}
             />
             <IconAction
-              icon={<Bookmark size={18} fill={isFavorite ? 'currentColor' : 'none'} />}
-              active={isFavorite}
-              label="Favoritar"
-              onClick={toggleFavorite}
+              icon={<Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />}
+              active={isSaved}
+              label="Salvar"
+              onClick={toggleSaved}
             />
             <IconAction icon={<Share2 size={18} />} label="Compartilhar" />
           </div>

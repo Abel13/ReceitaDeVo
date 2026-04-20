@@ -58,7 +58,7 @@ export const AppRouter = () => (
           <Route path="perfil" element={
             <PrivateRoute><ProfilePage /></PrivateRoute>
           } />
-          <Route path="favoritos" element={
+          <Route path="salvas" element={
             <PrivateRoute><FavoritesPage /></PrivateRoute>
           } />
         </Route>

@@ -66,8 +66,8 @@ export const Navbar = () => {
                   <Link to="/perfil" className="flex items-center gap-2 px-4 py-2.5 text-sm text-cafe hover:bg-quentinho transition-colors">
                     <User size={14} /> Meu perfil
                   </Link>
-                  <Link to="/favoritos" className="flex items-center gap-2 px-4 py-2.5 text-sm text-cafe hover:bg-quentinho transition-colors">
-                    <BookOpen size={14} /> Favoritos
+                  <Link to="/salvas" className="flex items-center gap-2 px-4 py-2.5 text-sm text-cafe hover:bg-quentinho transition-colors">
+                    <BookOpen size={14} /> Salvas
                   </Link>
                   <button onClick={signOut} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors text-left">
                     <LogOut size={14} /> Sair
