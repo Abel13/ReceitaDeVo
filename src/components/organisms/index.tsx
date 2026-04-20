@@ -25,8 +25,8 @@ export const Navbar = () => {
     <header className="sticky top-0 z-40 border-b border-cafe/10 bg-creme/90 backdrop-blur-sm">
       <nav className="mx-auto flex max-w-6xl items-center gap-6 px-6 h-14">
         {/* Logo */}
-        <Link to="/" className="font-display text-lg font-semibold text-terracota shrink-0">
-          Receita de Vó
+        <Link to="/" className="shrink-0">
+          <img src="/logo.png" alt="Receita de Vó" className="h-7 w-auto object-contain" />
         </Link>
 
         {/* Links */}

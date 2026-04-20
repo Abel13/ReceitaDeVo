@@ -24,8 +24,8 @@ export const AuthLayout = () => (
   <div className="min-h-screen bg-creme flex items-center justify-center px-4">
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h1 className="font-display text-4xl text-terracota italic">Receita de Vó</h1>
-        <p className="text-cafe-muted text-sm mt-1">Sabores que atravessam gerações</p>
+        <img src="/logo.png" alt="Receita de Vó" className="h-14 w-auto object-contain mx-auto" />
+        <p className="text-cafe-muted text-sm mt-2">Sabores que atravessam gerações</p>
       </div>
       <div className="bg-white rounded-brand border border-cafe/10 p-8 shadow-card">
         <Outlet />

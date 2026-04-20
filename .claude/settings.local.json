@@ -3,7 +3,9 @@
     "allow": [
       "Bash(xargs ls *)",
       "Bash(npx tsc *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(python3 -c \"from PIL import Image; img=Image.open\\('/Users/abeldutra/repository/vibecode/ReceitaDeVo/public/logo.png'\\); print\\('logo:', img.size\\); img2=Image.open\\('/Users/abeldutra/repository/vibecode/ReceitaDeVo/public/icon.png'\\); print\\('icon:', img2.size\\)\")",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/abeldutra/repository/vibecode/ReceitaDeVo/public/logo.png /Users/abeldutra/repository/vibecode/ReceitaDeVo/public/icon.png)"
     ]
   }
 }
