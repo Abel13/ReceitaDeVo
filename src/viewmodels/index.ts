@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryDocumentSnapshot } from 'firebase/firestore'
 import { recipeService }        from '@/services/firebase/recipeService'
 import { imageService }         from '@/services/image/imageService'
@@ -104,19 +105,18 @@ export const useRecipeListViewModel = (category?: string, difficulty?: string) =
 //  Responsabilidade: dados de uma receita + ações (like, favorito)
 // ─────────────────────────────────────────────
 export const useRecipeDetailViewModel = (id: string) => {
-  const [recipe, setRecipe]     = useState<Recipe | null>(null)
-  const [isLoading, setLoading] = useState(true)
-  const { user }                = useAuthStore()
+  const queryClient                        = useQueryClient()
+  const { user }                           = useAuthStore()
   const { addSaved, removeSaved, isSaved } = useSavedRecipesStore()
-  const { addToast }            = useUIStore()
+  const { addToast }                       = useUIStore()
 
-  useEffect(() => {
-    setLoading(true)
-    recipeService.getById(id).then(r => { setRecipe(r); setLoading(false) })
-  }, [id])
+  const { data: recipe, isLoading } = useQuery({
+    queryKey: ['recipe', id],
+    queryFn:  () => recipeService.getById(id),
+    enabled:  !!id,
+  })
 
-  // Fonte de verdade: likedBy vem do Firestore, não do localStorage
-  const likedByFirestore = user ? (recipe?.likedBy ?? []).includes(user.uid) : false
+  const isLiked = user ? (recipe?.likedBy ?? []).includes(user.uid) : false
 
   const handleToggleSaved = useCallback(() => {
     if (!recipe) return
@@ -129,31 +129,49 @@ export const useRecipeDetailViewModel = (id: string) => {
     }
   }, [recipe, isSaved, addSaved, removeSaved, addToast])
 
-  const handleToggleLike = useCallback(async () => {
-    if (!recipe || !user) { addToast('Entre para curtir receitas', 'info'); return }
-    const alreadyLiked = recipe.likedBy.includes(user.uid)
-    // Atualização optimista do estado local
-    setRecipe(prev => {
-      if (!prev) return prev
-      return {
-        ...prev,
-        likesCount: alreadyLiked ? prev.likesCount - 1 : prev.likesCount + 1,
-        likedBy: alreadyLiked
-          ? prev.likedBy.filter(uid => uid !== user.uid)
-          : [...prev.likedBy, user.uid],
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      if (!recipe || !user) throw new Error('unauthenticated')
+      if (isLiked) {
+        await recipeService.decrementLike(recipe.id, user.uid)
+      } else {
+        await recipeService.incrementLike(recipe.id, user.uid)
       }
-    })
-    if (alreadyLiked) {
-      await recipeService.decrementLike(recipe.id, user.uid)
-    } else {
-      await recipeService.incrementLike(recipe.id, user.uid)
-    }
-  }, [recipe, user, addToast])
+    },
+    onMutate: async () => {
+      // Atualização optimista
+      await queryClient.cancelQueries({ queryKey: ['recipe', id] })
+      const previous = queryClient.getQueryData<Recipe>(['recipe', id])
+      if (previous && user) {
+        queryClient.setQueryData<Recipe>(['recipe', id], {
+          ...previous,
+          likesCount: isLiked ? previous.likesCount - 1 : previous.likesCount + 1,
+          likedBy:    isLiked
+            ? previous.likedBy.filter(uid => uid !== user.uid)
+            : [...previous.likedBy, user.uid],
+        })
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['recipe', id], ctx.previous)
+    },
+    onSuccess: () => {
+      // Invalida lista de curtidas no perfil
+      queryClient.invalidateQueries({ queryKey: ['likedRecipes'] })
+    },
+  })
+
+  const handleToggleLike = useCallback(() => {
+    if (!user) { addToast('Entre para curtir receitas', 'info'); return }
+    likeMutation.mutate()
+  }, [user, addToast, likeMutation])
 
   return {
-    recipe, isLoading,
-    isSaved:    recipe ? isSaved(recipe.id) : false,
-    isLiked:    likedByFirestore,
+    recipe:      recipe ?? null,
+    isLoading,
+    isSaved:     recipe ? isSaved(recipe.id) : false,
+    isLiked,
     toggleSaved: handleToggleSaved,
     toggleLike:  handleToggleLike,
   }

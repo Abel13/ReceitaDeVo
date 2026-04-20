@@ -63,9 +63,11 @@ service cloud.firestore {
     // ── recipes ──────────────────────────────────────────────────────────────
 
     match /recipes/{recipeId} {
-      // Qualquer um pode ler receitas publicadas; autor vê as próprias rascunhos
-      allow read: if resource.data.isPublished == true
+      // Leitura de documento único: publicado ou próprio rascunho
+      allow get: if resource.data.isPublished == true
           || isOwner(resource.data.authorId);
+      // Queries (lista/busca): apenas usuários autenticados
+      allow list: if isAuth();
 
       // Apenas usuários autenticados podem criar
       allow create: if isAuth() && validRecipeCreate();

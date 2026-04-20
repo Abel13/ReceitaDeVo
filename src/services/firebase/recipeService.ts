@@ -117,6 +117,15 @@ export const recipeService = {
     return snap.docs.map(fromFirestore)
   },
 
+  /** Receitas curtidas por um usuário */
+  listLikedByUser: async (userId: string): Promise<Recipe[]> => {
+    const q = query(recipesRef(), where('likedBy', 'array-contains', userId))
+    const snap = await getDocs(q)
+    return snap.docs
+      .map(fromFirestore)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+  },
+
   // ── Interações ───────────────────────────────
 
   incrementLike: async (recipeId: string, userId: string): Promise<void> => {

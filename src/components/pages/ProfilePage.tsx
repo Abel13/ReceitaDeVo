@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PlusCircle, BookOpen, Heart, ChefHat } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Avatar, Skeleton } from '@/components/atoms'
 import { Button } from '@/components/atoms/Button'
 import { RecipeGrid } from '@/components/organisms'
 import { useAuthViewModel } from '@/viewmodels'
 import { useSavedRecipesStore } from '@/store'
 import { recipeService } from '@/services/firebase/recipeService'
-import type { Recipe } from '@/models'
 
 // ─────────────────────────────────────────────
 //  Page: ProfilePage (dashboard do usuário)
@@ -15,26 +15,30 @@ import type { Recipe } from '@/models'
 type Tab = 'minhas' | 'salvas' | 'curtidas'
 
 const ProfilePage = () => {
-  const { user, signOut }            = useAuthViewModel()
-  const { saved, liked }             = useSavedRecipesStore()
-  const [tab, setTab]                = useState<Tab>('minhas')
-  const [myRecipes, setMyRecipes]    = useState<Recipe[]>([])
-  const [isLoading, setLoading]      = useState(true)
+  const { user, signOut } = useAuthViewModel()
+  const { saved }         = useSavedRecipesStore()
+  const [tab, setTab]     = useState<Tab>('minhas')
 
-  useEffect(() => {
-    if (!user) return
-    setLoading(true)
-    recipeService.listByAuthor(user.uid)
-      .then(setMyRecipes)
-      .finally(() => setLoading(false))
-  }, [user])
+  const { data: myRecipes    = [], isLoading: loadingMine   } = useQuery({
+    queryKey: ['myRecipes', user?.uid],
+    queryFn:  () => recipeService.listByAuthor(user!.uid),
+    enabled:  !!user,
+  })
+
+  const { data: likedRecipes = [], isLoading: loadingLiked  } = useQuery({
+    queryKey: ['likedRecipes', user?.uid],
+    queryFn:  () => recipeService.listLikedByUser(user!.uid),
+    enabled:  !!user,
+  })
+
+  const isLoading = loadingMine || loadingLiked
 
   if (!user) return null
 
-  const displayedRecipes: Recipe[] =
-    tab === 'minhas'    ? myRecipes :
-    tab === 'salvas' ? saved :
-    saved.filter(r => liked.includes(r.id))
+  const displayedRecipes =
+    tab === 'minhas'   ? myRecipes :
+    tab === 'salvas'   ? saved :
+    likedRecipes
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -49,7 +53,7 @@ const ProfilePage = () => {
           {/* Stats */}
           <div className="flex gap-5 mt-3">
             <StatItem icon={<ChefHat size={14} />} value={myRecipes.length} label="receitas" />
-            <StatItem icon={<Heart size={14} />}   value={liked.length}     label="curtidas" />
+            <StatItem icon={<Heart size={14} />}   value={likedRecipes.length} label="curtidas" />
             <StatItem icon={<BookOpen size={14} />} value={saved.length} label="salvas" />
           </div>
         </div>
