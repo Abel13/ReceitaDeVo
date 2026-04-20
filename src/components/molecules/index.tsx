@@ -1,7 +1,9 @@
 import { Heart, Bookmark, MessageCircle, Share2, Clock, Users, ChefHat } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useState } from 'react'
 import { Badge, Avatar, difficultyToBadge, difficultyLabel } from '@/components/atoms'
-import { useSavedRecipesStore } from '@/store'
+import { useSavedRecipesStore, useAuthStore, useUIStore } from '@/store'
+import { recipeService } from '@/services/firebase/recipeService'
 import type { Recipe } from '@/models'
 
 // ─────────────────────────────────────────────
@@ -14,18 +16,31 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
-  const { isSaved, addSaved, removeSaved, isLiked, toggleLike } = useSavedRecipesStore()
-  const saved  = isSaved(recipe.id)
-  const liked  = isLiked(recipe.id)
+  const { isSaved, addSaved, removeSaved } = useSavedRecipesStore()
+  const { user } = useAuthStore()
+  const { addToast } = useUIStore()
+  const saved = isSaved(recipe.id)
+
+  const initialLiked = user ? (recipe.likedBy ?? []).includes(user.uid) : false
+  const [liked, setLiked] = useState(initialLiked)
+  const [likesCount, setLikesCount] = useState(recipe.likesCount)
 
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation()
     saved ? removeSaved(recipe.id) : addSaved(recipe)
   }
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    toggleLike(recipe.id)
+    if (!user) { addToast('Entre para curtir receitas', 'info'); return }
+    const nowLiked = !liked
+    setLiked(nowLiked)
+    setLikesCount(c => c + (nowLiked ? 1 : -1))
+    if (nowLiked) {
+      await recipeService.incrementLike(recipe.id, user.uid)
+    } else {
+      await recipeService.decrementLike(recipe.id, user.uid)
+    }
   }
 
   return (
@@ -85,7 +100,7 @@ export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
         <div className="flex items-center gap-1 border-t border-cafe/8 pt-3">
           <ActionButton
             icon={<Heart size={13} fill={liked ? 'currentColor' : 'none'} />}
-            label={String(recipe.likesCount + (liked ? 1 : 0))}
+            label={String(likesCount)}
             active={liked}
             onClick={handleLike}
           />
@@ -115,7 +130,7 @@ const ActionButton = ({ icon, label, active, onClick }: {
 //  Molecule: SearchBar
 // ─────────────────────────────────────────────
 import { Search, X } from 'lucide-react'
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 
 interface SearchBarProps {
   onSearch:   (term: string) => void
