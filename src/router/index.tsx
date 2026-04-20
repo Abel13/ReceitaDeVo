@@ -17,6 +17,12 @@ const IngredientSearch = lazy(
 );
 const ProfilePage = lazy(() => import("@/components/pages/ProfilePage"));
 const FavoritesPage = lazy(() => import("@/components/pages/FavoritesPage"));
+const CategoriesPage = lazy(() =>
+  import("@/components/pages/CategoriesPage").then((m) => ({ default: m.CategoriesPage }))
+);
+const CategoryDetailPage = lazy(() =>
+  import("@/components/pages/CategoriesPage").then((m) => ({ default: m.CategoryDetailPage }))
+);
 const LoginPage = lazy(() => import("@/components/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/components/pages/RegisterPage"));
 const NotFoundPage = lazy(() => import("@/components/pages/NotFoundPage"));
@@ -57,7 +63,8 @@ export const AppRouter = () => (
           <Route index element={<HomePage />} />
           <Route path="receita/:id" element={<RecipeDetailPage />} />
           <Route path="ingredientes" element={<IngredientSearch />} />
-          <Route path="categorias" element={<IngredientSearch />} />
+          <Route path="categorias" element={<CategoriesPage />} />
+          <Route path="categorias/:slug" element={<CategoryDetailPage />} />
           <Route path="buscar" element={<HomePage />} />
 
           {/* Privadas */}

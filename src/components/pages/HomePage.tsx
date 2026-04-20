@@ -10,15 +10,15 @@ import type { DifficultyLevel } from '@/models'
 // ─────────────────────────────────────────────
 
 const CATEGORIES = [
-  { id: '',        label: 'Tudo' },
-  { id: 'bolos',   label: 'Bolos' },
-  { id: 'salgados', label: 'Salgados' },
-  { id: 'sopas',   label: 'Sopas' },
-  { id: 'doces',   label: 'Doces' },
-  { id: 'massas',  label: 'Massas' },
-  { id: 'carnes',  label: 'Carnes' },
-  { id: 'saladas', label: 'Saladas' },
-  { id: 'bebidas', label: 'Bebidas' },
+  { id: '',          label: 'Tudo' },
+  { id: 'Bolos',     label: 'Bolos' },
+  { id: 'Salgados',  label: 'Salgados' },
+  { id: 'Sopas',     label: 'Sopas' },
+  { id: 'Doces',     label: 'Doces' },
+  { id: 'Massas',    label: 'Massas' },
+  { id: 'Carnes',    label: 'Carnes' },
+  { id: 'Saladas',   label: 'Saladas' },
+  { id: 'Bebidas',   label: 'Bebidas' },
 ]
 
 const DIFFICULTY_FILTERS: { id: DifficultyLevel | ''; label: string }[] = [
