@@ -1,13 +1,14 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   Heart, Bookmark, Share2, Flag, Clock, Users, Thermometer,
-  ChefHat, Package, ArrowLeft, CheckCircle, AlertCircle, RefreshCw
+  ChefHat, Package, ArrowLeft, CheckCircle, AlertCircle, RefreshCw, Pencil
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Button } from '@/components/atoms/Button'
 import { Badge, Avatar, Skeleton } from '@/components/atoms'
 import { StatPill, AffiliateLink } from '@/components/molecules'
 import { useRecipeDetailViewModel } from '@/viewmodels'
+import { useAuthStore } from '@/store'
 import { difficultyToBadge, difficultyLabel } from '@/components/atoms'
 
 // ─────────────────────────────────────────────
@@ -18,6 +19,8 @@ const RecipeDetailPage = () => {
   const navigate    = useNavigate()
   const { recipe, isLoading, isSaved, isLiked, toggleSaved, toggleLike } =
     useRecipeDetailViewModel(id!)
+  const { user } = useAuthStore()
+  const isAuthor = !!(user && recipe && user.uid === recipe.authorId)
 
   if (isLoading) return <RecipeDetailSkeleton />
   if (!recipe)   return (
@@ -51,6 +54,16 @@ const RecipeDetailPage = () => {
             <h1 className="font-display text-2xl md:text-3xl text-cafe leading-tight">{recipe.title}</h1>
           </div>
           <div className="flex gap-2 shrink-0">
+            {isAuthor && (
+              <Link
+                to={`/receita/${recipe.id}/editar`}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-cafe/15 bg-white text-cafe-muted hover:border-terracota/40 hover:text-terracota transition-all duration-150 focus-ring"
+                aria-label="Editar receita"
+                title="Editar receita"
+              >
+                <Pencil size={18} />
+              </Link>
+            )}
             <IconAction
               icon={<Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />}
               active={isLiked}

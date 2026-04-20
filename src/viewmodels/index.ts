@@ -276,3 +276,63 @@ export const useCreateRecipeViewModel = () => {
 
   return { isSubmitting, uploadProgress, submitRecipe }
 }
+
+// ─────────────────────────────────────────────
+//  useEditRecipeViewModel
+//  Responsabilidade: edição e exclusão de receita existente
+// ─────────────────────────────────────────────
+export const useEditRecipeViewModel = (id: string) => {
+  const queryClient              = useQueryClient()
+  const { user }                 = useAuthStore()
+  const { addToast }             = useUIStore()
+  const [isSubmitting, setSubmitting] = useState(false)
+  const [uploadProgress, setProgress] = useState(0)
+  const [isDeleting, setDeleting]     = useState(false)
+
+  const { data: recipe, isLoading } = useQuery({
+    queryKey: ['recipe', id],
+    queryFn:  () => recipeService.getById(id),
+    enabled:  !!id,
+  })
+
+  const updateRecipe = useCallback(async (
+    data: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'authorId' | 'authorName' | 'authorPhotoURL' | 'likesCount' | 'likedBy' | 'favoritesCount' | 'commentsCount'>,
+    newPhotos: File[]
+  ): Promise<boolean> => {
+    if (!user) return false
+    setSubmitting(true)
+    setProgress(0)
+
+    let photos   = recipe?.photos  ?? []
+    let thumbUrl = recipe?.thumbUrl ?? null
+
+    if (newPhotos.length > 0) {
+      const uploadedUrls: string[] = []
+      const total = newPhotos.length
+      for (let i = 0; i < newPhotos.length; i++) {
+        const { fullUrl, thumbUrl: t } = await imageService.uploadRecipePhoto(newPhotos[i], id, i)
+        uploadedUrls.push(fullUrl)
+        if (i === 0) thumbUrl = t
+        setProgress(Math.round(((i + 1) / total) * 100))
+      }
+      photos   = uploadedUrls
+      thumbUrl = thumbUrl
+    }
+
+    await recipeService.update(id, { ...data, photos, thumbUrl })
+    queryClient.invalidateQueries({ queryKey: ['recipe', id] })
+    setSubmitting(false)
+    addToast('Receita atualizada!')
+    return true
+  }, [id, user, recipe, addToast, queryClient])
+
+  const deleteRecipe = useCallback(async (): Promise<boolean> => {
+    if (!user) return false
+    setDeleting(true)
+    await recipeService.delete(id)
+    addToast('Receita excluída', 'info')
+    return true
+  }, [id, user, addToast])
+
+  return { recipe, isLoading, isSubmitting, uploadProgress, isDeleting, updateRecipe, deleteRecipe }
+}

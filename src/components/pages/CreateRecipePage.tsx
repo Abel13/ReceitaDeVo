@@ -7,16 +7,15 @@ import {
 import { Button } from '@/components/atoms/Button'
 import { Input, Textarea } from '@/components/atoms'
 import { useCreateRecipeViewModel } from '@/viewmodels'
-import type { Ingredient, RecipeStep, DifficultyLevel, StorageMethod, IngredientState } from '@/models'
+import type { Ingredient, Recipe, RecipeStep, DifficultyLevel, StorageMethod, IngredientState } from '@/models'
 import { clsx } from 'clsx'
 
 // ─────────────────────────────────────────────
-//  Page: CreateRecipePage
+//  Constantes do formulário
 // ─────────────────────────────────────────────
-
 type FormStep = 'info' | 'ingredientes' | 'preparo' | 'detalhes' | 'fotos'
 
-const STEPS: { id: FormStep; label: string; icon: React.ReactNode }[] = [
+const FORM_STEPS: { id: FormStep; label: string; icon: React.ReactNode }[] = [
   { id: 'info',         label: 'Informações',  icon: <BookOpen size={14} /> },
   { id: 'ingredientes', label: 'Ingredientes', icon: <Package size={14} /> },
   { id: 'preparo',      label: 'Preparo',      icon: <ChefHat size={14} /> },
@@ -24,7 +23,7 @@ const STEPS: { id: FormStep; label: string; icon: React.ReactNode }[] = [
   { id: 'fotos',        label: 'Fotos',        icon: <Camera size={14} /> },
 ]
 
-const CATEGORIES = ['Bolos', 'Salgados', 'Sopas', 'Doces', 'Massas', 'Carnes', 'Saladas', 'Bebidas', 'Lanches', 'Sobremesas']
+export const CATEGORIES = ['Bolos', 'Salgados', 'Sopas', 'Doces', 'Massas', 'Carnes', 'Saladas', 'Bebidas', 'Lanches', 'Sobremesas']
 const DIFFICULTY: { id: DifficultyLevel; label: string }[] = [
   { id: 'facil', label: 'Fácil' }, { id: 'medio', label: 'Médio' }, { id: 'dificil', label: 'Difícil' }
 ]
@@ -35,101 +34,118 @@ const STORAGE_METHODS: { id: StorageMethod; label: string }[] = [
   { id: 'nao_armazenar',        label: 'Consumir imediatamente' },
 ]
 const INGREDIENT_STATES: { id: IngredientState; label: string }[] = [
-  { id: 'cru',                 label: 'Cru / Natural' },
+  { id: 'cru',                  label: 'Cru / Natural' },
   { id: 'temperatura_ambiente', label: 'Temp. ambiente' },
-  { id: 'gelado',              label: 'Gelado' },
-  { id: 'derretido',           label: 'Derretido' },
-  { id: 'cozido',              label: 'Cozido' },
+  { id: 'gelado',               label: 'Gelado' },
+  { id: 'derretido',            label: 'Derretido' },
+  { id: 'cozido',               label: 'Cozido' },
 ]
 
 const emptyIngredient = (index: number): Ingredient => ({
   id: crypto.randomUUID(), name: '', quantity: 1, unit: 'g',
-  state: 'cru', orderIndex: index, substitutes: [], affiliateUrl: null
+  state: 'cru', orderIndex: index, substitutes: [], affiliateUrl: null,
 })
 
 const emptyStep = (index: number): RecipeStep => ({
-  id: crypto.randomUUID(), orderIndex: index, description: '', durationMin: null, tip: null
+  id: crypto.randomUUID(), orderIndex: index, description: '', durationMin: null, tip: null,
 })
 
-const CreateRecipePage = () => {
-  const navigate  = useNavigate()
-  const { isSubmitting, uploadProgress, submitRecipe } = useCreateRecipeViewModel()
+// ─────────────────────────────────────────────
+//  RecipeFormContent — compartilhado entre criar e editar
+// ─────────────────────────────────────────────
+export interface RecipeFormData {
+  title: string; description: string; category: string; difficulty: DifficultyLevel
+  prepTimeMin: number; cookTimeMin: number; totalTimeMin: number
+  servings: number; servingUnit: string; ovenTempCelsius: number | null
+  utensils: string[]; ingredients: Ingredient[]; steps: RecipeStep[]
+  storage: { method: StorageMethod; durationDays: number | null; tip: string | null }
+  tags: string[]; photos: string[]; thumbUrl: string | null; isPublished: boolean
+}
+
+interface RecipeFormContentProps {
+  defaultValues?: Partial<Recipe>
+  onSubmit:       (data: RecipeFormData, photos: File[]) => Promise<void>
+  isSubmitting:   boolean
+  uploadProgress: number
+  submitLabel:    string
+  onDelete?:      () => void
+  isDeleting?:    boolean
+}
+
+export const RecipeFormContent = ({
+  defaultValues,
+  onSubmit,
+  isSubmitting,
+  uploadProgress,
+  submitLabel,
+  onDelete,
+  isDeleting = false,
+}: RecipeFormContentProps) => {
   const [activeStep, setActiveStep] = useState<FormStep>('info')
 
-  // ── Form state ───────────────────────────────
-  const [title, setTitle]           = useState('')
-  const [description, setDesc]      = useState('')
-  const [category, setCategory]     = useState('')
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('facil')
-  const [prepTime, setPrepTime]     = useState(30)
-  const [cookTime, setCookTime]     = useState(30)
-  const [servings, setServings]     = useState(4)
-  const [servingUnit, setServUnit]  = useState('porções')
-  const [ovenTemp, setOvenTemp]     = useState<number | null>(null)
-  const [utensils, setUtensils]     = useState<string[]>([''])
-  const [ingredients, setIngredients] = useState<Ingredient[]>([emptyIngredient(0)])
-  const [steps, setSteps]           = useState<RecipeStep[]>([emptyStep(0)])
-  const [storageMethod, setStorageMethod] = useState<StorageMethod>('temperatura_ambiente')
-  const [storageDays, setStorageDays] = useState<number | null>(3)
-  const [storageTip, setStorageTip] = useState('')
-  const [photos, setPhotos]         = useState<File[]>([])
-  const [photosPreviews, setPreviews] = useState<string[]>([])
-  const [tags, setTags]             = useState('')
+  const [title,       setTitle]      = useState(defaultValues?.title       ?? '')
+  const [description, setDesc]       = useState(defaultValues?.description ?? '')
+  const [category,    setCategory]   = useState(defaultValues?.category    ?? '')
+  const [difficulty,  setDifficulty] = useState<DifficultyLevel>(defaultValues?.difficulty ?? 'facil')
+  const [prepTime,    setPrepTime]   = useState(defaultValues?.prepTimeMin  ?? 30)
+  const [cookTime,    setCookTime]   = useState(defaultValues?.cookTimeMin  ?? 30)
+  const [servings,    setServings]   = useState(defaultValues?.servings     ?? 4)
+  const [servingUnit, setServUnit]   = useState(defaultValues?.servingUnit  ?? 'porções')
+  const [ovenTemp,    setOvenTemp]   = useState<number | null>(defaultValues?.ovenTempCelsius ?? null)
+  const [utensils,    setUtensils]   = useState<string[]>(defaultValues?.utensils?.length ? defaultValues.utensils : [''])
+  const [ingredients, setIngredients] = useState<Ingredient[]>(defaultValues?.ingredients?.length ? defaultValues.ingredients : [emptyIngredient(0)])
+  const [steps,       setSteps]      = useState<RecipeStep[]>(defaultValues?.steps?.length ? defaultValues.steps : [emptyStep(0)])
+  const [storageMethod, setStorageMethod] = useState<StorageMethod>(defaultValues?.storage?.method ?? 'temperatura_ambiente')
+  const [storageDays,   setStorageDays]   = useState<number | null>(defaultValues?.storage?.durationDays ?? 3)
+  const [storageTip,    setStorageTip]    = useState(defaultValues?.storage?.tip ?? '')
+  const [photos,      setPhotos]     = useState<File[]>([])
+  const [photosPreviews, setPreviews] = useState<string[]>(defaultValues?.photos ?? [])
+  const [tags,        setTags]       = useState(defaultValues?.tags?.join(', ') ?? '')
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // ── Ingredient handlers ──────────────────────
   const updateIngredient = useCallback((id: string, field: keyof Ingredient, value: unknown) => {
     setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   }, [])
-
-  const addIngredient = () => setIngredients(prev => [...prev, emptyIngredient(prev.length)])
+  const addIngredient    = () => setIngredients(prev => [...prev, emptyIngredient(prev.length)])
   const removeIngredient = (id: string) => setIngredients(prev => prev.filter(i => i.id !== id))
 
-  // ── Step handlers ────────────────────────────
   const updateStep = useCallback((id: string, field: keyof RecipeStep, value: unknown) => {
     setSteps(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s))
   }, [])
-
   const addStep    = () => setSteps(prev => [...prev, emptyStep(prev.length)])
   const removeStep = (id: string) => setSteps(prev => prev.filter(s => s.id !== id))
 
-  // ── Photo handler ────────────────────────────
   const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, 5)
     setPhotos(files)
     setPreviews(files.map(f => URL.createObjectURL(f)))
   }
 
-  // ── Submit ───────────────────────────────────
   const handleSubmit = async () => {
-    const id = await submitRecipe(
-      {
-        title, description, category, difficulty,
-        prepTimeMin: prepTime, cookTimeMin: cookTime,
-        totalTimeMin: prepTime + cookTime,
-        servings, servingUnit,
-        ovenTempCelsius: ovenTemp,
-        ingredients, steps,
-        utensils: utensils.filter(Boolean),
-        storage: { method: storageMethod, durationDays: storageDays, tip: storageTip || null },
-        tags: tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
-        isPublished: true,
-      },
-      photos
-    )
-    if (id) navigate(`/receita/${id}`)
+    await onSubmit({
+      title, description, category, difficulty,
+      prepTimeMin: prepTime, cookTimeMin: cookTime,
+      totalTimeMin: prepTime + cookTime,
+      servings, servingUnit, ovenTempCelsius: ovenTemp,
+      ingredients, steps,
+      utensils: utensils.filter(Boolean),
+      storage: { method: storageMethod, durationDays: storageDays, tip: storageTip || null },
+      tags: tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
+      photos: defaultValues?.photos ?? [],
+      thumbUrl: defaultValues?.thumbUrl ?? null,
+      isPublished: true,
+    }, photos)
   }
 
-  const stepIndex   = STEPS.findIndex(s => s.id === activeStep)
-  const isLastStep  = stepIndex === STEPS.length - 1
+  const stepIndex   = FORM_STEPS.findIndex(s => s.id === activeStep)
+  const isLastStep  = stepIndex === FORM_STEPS.length - 1
   const isFirstStep = stepIndex === 0
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="font-display text-2xl text-cafe">Nova receita</h1>
-
+    <>
       {/* Progress steps */}
       <div className="flex gap-1">
-        {STEPS.map((s, i) => (
+        {FORM_STEPS.map((s, i) => (
           <button
             key={s.id}
             onClick={() => setActiveStep(s.id)}
@@ -307,7 +323,11 @@ const CreateRecipePage = () => {
       {/* ── Seção: Fotos ── */}
       {activeStep === 'fotos' && (
         <FormSection title="Fotos da receita">
-          <p className="text-xs text-cafe-subtle">Adicione até 5 fotos. As imagens serão otimizadas automaticamente antes do envio.</p>
+          <p className="text-xs text-cafe-subtle">
+            {defaultValues?.photos?.length
+              ? 'Selecione novas fotos para substituir as existentes, ou avance sem alterar.'
+              : 'Adicione até 5 fotos. As imagens serão otimizadas automaticamente antes do envio.'}
+          </p>
           <label className="flex flex-col items-center justify-center gap-3 rounded-brand border-2 border-dashed border-cafe/20 py-10 cursor-pointer hover:border-terracota/40 transition-colors">
             <Camera size={32} className="text-cafe-subtle/40" />
             <span className="text-sm text-cafe-muted font-medium">Clique para selecionar fotos</span>
@@ -326,7 +346,6 @@ const CreateRecipePage = () => {
             </div>
           )}
 
-          {/* Progress de upload */}
           {isSubmitting && (
             <div className="space-y-1">
               <div className="flex justify-between text-xs text-cafe-muted">
@@ -342,20 +361,89 @@ const CreateRecipePage = () => {
       )}
 
       {/* Navegação */}
-      <div className="flex justify-between gap-3 pb-8">
-        <Button variant="ghost" onClick={() => setActiveStep(STEPS[stepIndex - 1]?.id)} disabled={isFirstStep}>
+      <div className="flex justify-between gap-3 pb-4">
+        <Button variant="ghost" onClick={() => setActiveStep(FORM_STEPS[stepIndex - 1]?.id)} disabled={isFirstStep}>
           Anterior
         </Button>
         {isLastStep ? (
           <Button onClick={handleSubmit} isLoading={isSubmitting} disabled={!title || !category}>
-            Publicar receita
+            {submitLabel}
           </Button>
         ) : (
-          <Button onClick={() => setActiveStep(STEPS[stepIndex + 1].id)}>
+          <Button onClick={() => setActiveStep(FORM_STEPS[stepIndex + 1].id)}>
             Próximo
           </Button>
         )}
       </div>
+
+      {/* Zona de exclusão (apenas no modo edição) */}
+      {onDelete && (
+        <div className="border-t border-red-100 pt-6 pb-8">
+          {confirmDelete ? (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-4 space-y-3">
+              <p className="text-sm font-semibold text-red-700">Tem certeza? Esta ação não pode ser desfeita.</p>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
+                <Button variant="danger" size="sm" onClick={onDelete} isLoading={isDeleting}>
+                  Sim, excluir receita
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors focus-ring rounded-lg"
+            >
+              <Trash2 size={14} /> Excluir receita
+            </button>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────
+//  Page: CreateRecipePage
+// ─────────────────────────────────────────────
+const CreateRecipePage = () => {
+  const navigate = useNavigate()
+  const { isSubmitting, uploadProgress, submitRecipe } = useCreateRecipeViewModel()
+
+  const handleSubmit = async (data: RecipeFormData, photos: File[]) => {
+    const id = await submitRecipe(
+      {
+        title:          data.title,
+        description:    data.description,
+        category:       data.category,
+        difficulty:     data.difficulty,
+        prepTimeMin:    data.prepTimeMin,
+        cookTimeMin:    data.cookTimeMin,
+        totalTimeMin:   data.totalTimeMin,
+        servings:       data.servings,
+        servingUnit:    data.servingUnit,
+        ovenTempCelsius: data.ovenTempCelsius,
+        utensils:       data.utensils,
+        ingredients:    data.ingredients,
+        steps:          data.steps,
+        storage:        data.storage,
+        tags:           data.tags,
+        isPublished:    true,
+      },
+      photos
+    )
+    if (id) navigate(`/receita/${id}`)
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <h1 className="font-display text-2xl text-cafe">Nova receita</h1>
+      <RecipeFormContent
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        uploadProgress={uploadProgress}
+        submitLabel="Publicar receita"
+      />
     </div>
   )
 }

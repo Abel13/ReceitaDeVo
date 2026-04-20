@@ -23,6 +23,7 @@ const CategoriesPage = lazy(() =>
 const CategoryDetailPage = lazy(() =>
   import("@/components/pages/CategoriesPage").then((m) => ({ default: m.CategoryDetailPage }))
 );
+const EditRecipePage = lazy(() => import("@/components/pages/EditRecipePage"));
 const LoginPage = lazy(() => import("@/components/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/components/pages/RegisterPage"));
 const NotFoundPage = lazy(() => import("@/components/pages/NotFoundPage"));
@@ -73,6 +74,14 @@ export const AppRouter = () => (
             element={
               <PrivateRoute>
                 <CreateRecipePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="receita/:id/editar"
+            element={
+              <PrivateRoute>
+                <EditRecipePage />
               </PrivateRoute>
             }
           />
