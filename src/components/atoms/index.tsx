@@ -1,4 +1,4 @@
-import { forwardRef, type InputHTMLAttributes } from 'react'
+import { forwardRef, useState, type InputHTMLAttributes } from 'react'
 import { clsx } from 'clsx'
 import type { DifficultyLevel } from '@/models'
 
@@ -106,13 +106,16 @@ const sizePx: Record<string, string> = {
 }
 
 export const Avatar = ({ name, photoURL, size = 'md', className }: AvatarProps) => {
+  const [imgError, setImgError] = useState(false)
   const initials = name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 
-  if (photoURL) {
+  if (photoURL && !imgError) {
     return (
       <img
         src={photoURL}
         alt={name}
+        referrerPolicy="no-referrer"
+        onError={() => setImgError(true)}
         className={clsx('rounded-full object-cover', sizePx[size], className)}
       />
     )
