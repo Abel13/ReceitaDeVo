@@ -45,6 +45,14 @@ jobs:
             fi
           done
 
+          # Firebase Web API keys have this public, well-defined format.  An
+          # arbitrary value would otherwise build successfully and only fail
+          # when the browser initializes Firebase Auth.
+          if ! [[ "$VITE_FIREBASE_API_KEY" =~ ^AIza[0-9A-Za-z_-]{35}$ ]]; then
+            echo "::error title=Invalid Firebase API key::VITE_FIREBASE_API_KEY must be the Firebase Web API key (AIza...)."
+            missing=1
+          fi
+
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi

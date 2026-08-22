@@ -7,9 +7,9 @@ const env = import.meta.env
 
 function assertFirebaseEnv(): void {
   const apiKey = (env.VITE_FIREBASE_API_KEY as string | undefined)?.trim()
-  if (!apiKey || apiKey === 'your_api_key_here') {
+  if (!apiKey || !/^AIza[0-9A-Za-z_-]{35}$/.test(apiKey)) {
     throw new Error(
-      'Firebase: VITE_FIREBASE_API_KEY em falta ou placeholder. Em desenvolvimento, copia .env.example para .env.local e preenche com os valores do Firebase Console. Em produção, as variáveis VITE_FIREBASE_* têm de existir no momento do build (ex.: secrets/variáveis do GitHub Actions).'
+      'Firebase: VITE_FIREBASE_API_KEY é inválida. Usa a chave Web do Firebase (começa por AIza) em .env.local ou nas variáveis de produção do GitHub Actions.'
     )
   }
 }
