@@ -56,7 +56,12 @@ const PageLoader = () => (
 //  App Router
 // ─────────────────────────────────────────────
 export const AppRouter = () => (
-  <BrowserRouter>
+  <BrowserRouter
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    }}
+  >
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Públicas com layout principal */}

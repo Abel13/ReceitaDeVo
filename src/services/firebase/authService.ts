@@ -22,6 +22,9 @@ const googleProvider = new GoogleAuthProvider()
 
 const USERS_COLLECTION = 'users'
 
+/** Uma única consumição de getRedirectResult por carregamento (Firebase só entrega o resultado na primeira chamada). */
+let redirectResultPromise: Promise<void> | null = null
+
 /** Mapeia FirebaseUser → nosso modelo de domínio */
 const toUserModel = (fb: FirebaseUser): Omit<User, 'bio' | 'followersCount' | 'followingCount' | 'recipesCount' | 'createdAt'> => ({
   uid:         fb.uid,
@@ -63,9 +66,19 @@ export const authService = {
     signInWithRedirect(auth, googleProvider),
 
   // Chamado no boot da app para capturar o resultado do redirect do Google
-  handleGoogleRedirect: async (): Promise<void> => {
-    const result = await getRedirectResult(auth)
-    if (result?.user) await ensureUserDocument(result.user)
+  handleGoogleRedirect: (): Promise<void> => {
+    if (!redirectResultPromise) {
+      redirectResultPromise = (async () => {
+        try {
+          const result = await getRedirectResult(auth)
+          if (result?.user) await ensureUserDocument(result.user)
+        } catch {
+          redirectResultPromise = null
+          throw new Error('Falha ao concluir login com Google após o redirecionamento.')
+        }
+      })()
+    }
+    return redirectResultPromise
   },
 
   signOut: (): Promise<void> => firebaseSignOut(auth),

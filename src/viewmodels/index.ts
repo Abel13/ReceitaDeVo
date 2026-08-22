@@ -8,23 +8,46 @@ import { useAuthStore, useSavedRecipesStore, useUIStore } from '@/store'
 import type { Recipe, IngredientSearchQuery } from '@/models'
 
 // ─────────────────────────────────────────────
+//  useAuthBootstrap
+//  Uma única subscrição na app (App.tsx). Evita múltiplos useAuthViewModel + Strict Mode
+//  a correr getRedirectResult / onAuthStateChanged em paralelo e “perder” o login.
+// ─────────────────────────────────────────────
+export const useAuthBootstrap = () => {
+  const { setUser, setLoading } = useAuthStore()
+
+  useEffect(() => {
+    let unsub: (() => void) | undefined
+    let cancelled = false
+
+    void authService
+      .handleGoogleRedirect()
+      .catch(() => {
+        /* redirect já tratado ou erro transitório; o listener sincroniza o estado */
+      })
+      .finally(() => {
+        if (cancelled) return
+        unsub = authService.onAuthStateChanged((fb) => {
+          setUser(fb)
+          setLoading(false)
+        })
+      })
+
+    return () => {
+      cancelled = true
+      unsub?.()
+    }
+  }, [setUser, setLoading])
+}
+
+// ─────────────────────────────────────────────
 //  useAuthViewModel
-//  Responsabilidade: lógica de autenticação + estado do usuário
+//  Responsabilidade: ações de autenticação + leitura do estado (listener em useAuthBootstrap)
 // ─────────────────────────────────────────────
 export const useAuthViewModel = () => {
-  const { user, isLoading, setUser, setLoading } = useAuthStore()
+  const { user, isLoading } = useAuthStore()
   const { clearAll }  = useSavedRecipesStore()
   const { addToast }  = useUIStore()
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    authService.handleGoogleRedirect()
-    const unsub = authService.onAuthStateChanged((fb) => {
-      setUser(fb)
-      setLoading(false)
-    })
-    return unsub
-  }, [setUser, setLoading])
 
   const signUpWithEmail = useCallback(async (name: string, email: string, password: string) => {
     try {
