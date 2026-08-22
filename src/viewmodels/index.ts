@@ -16,26 +16,22 @@ export const useAuthBootstrap = () => {
   const { setUser, setLoading } = useAuthStore()
 
   useEffect(() => {
-    let unsub: (() => void) | undefined
-    let cancelled = false
+    // O listener é a fonte de verdade da sessão. Ele deve começar antes de
+    // processar o redirect, pois a criação do perfil no Firestore pode falhar
+    // ou demorar sem invalidar uma sessão Google já concluída.
+    const unsub = authService.onAuthStateChanged((fb) => {
+      setUser(fb)
+      setLoading(false)
+    })
 
     void authService
       .handleGoogleRedirect()
       .catch(() => {
-        /* redirect já tratado ou erro transitório; o listener sincroniza o estado */
-      })
-      .finally(() => {
-        if (cancelled) return
-        unsub = authService.onAuthStateChanged((fb) => {
-          setUser(fb)
-          setLoading(false)
-        })
+        // O listener acima ainda sincroniza uma sessão válida, mesmo que não
+        // seja possível criar/ler o documento do perfil neste momento.
       })
 
-    return () => {
-      cancelled = true
-      unsub?.()
-    }
+    return unsub
   }, [setUser, setLoading])
 }
 
