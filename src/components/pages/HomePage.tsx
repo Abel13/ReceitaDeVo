@@ -19,6 +19,7 @@ const CATEGORIES = [
   { id: 'Carnes',    label: 'Carnes' },
   { id: 'Saladas',   label: 'Saladas' },
   { id: 'Bebidas',   label: 'Bebidas' },
+  { id: 'Petiscos',  label: 'Petiscos' },
 ]
 
 const DIFFICULTY_FILTERS: { id: DifficultyLevel | ''; label: string }[] = [

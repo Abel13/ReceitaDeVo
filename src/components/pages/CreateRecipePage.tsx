@@ -23,7 +23,7 @@ const FORM_STEPS: { id: FormStep; label: string; icon: React.ReactNode }[] = [
   { id: 'fotos',        label: 'Fotos',        icon: <Camera size={14} /> },
 ]
 
-export const CATEGORIES = ['Bolos', 'Salgados', 'Sopas', 'Doces', 'Massas', 'Carnes', 'Saladas', 'Bebidas', 'Lanches', 'Sobremesas']
+export const CATEGORIES = ['Bolos', 'Salgados', 'Sopas', 'Doces', 'Massas', 'Carnes', 'Saladas', 'Bebidas', 'Lanches', 'Sobremesas', 'Petiscos']
 const DIFFICULTY: { id: DifficultyLevel; label: string }[] = [
   { id: 'facil', label: 'Fácil' }, { id: 'medio', label: 'Médio' }, { id: 'dificil', label: 'Difícil' }
 ]
