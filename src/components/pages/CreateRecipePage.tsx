@@ -5,7 +5,7 @@ import {
   Thermometer, Camera, ChefHat, Package, BookOpen
 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button'
-import { Input, Textarea } from '@/components/atoms'
+import { Input, Textarea, NumericInput } from '@/components/atoms'
 import { useCreateRecipeViewModel } from '@/viewmodels'
 import type { Ingredient, Recipe, RecipeStep, DifficultyLevel, StorageMethod, IngredientState } from '@/models'
 import { clsx } from 'clsx'
@@ -211,9 +211,9 @@ export const RecipeFormContent = ({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Input id="prep" type="number" label="Preparo (min)" value={prepTime} onChange={e => setPrepTime(Number(e.target.value))} min={1} />
-            <Input id="cook" type="number" label="Cozimento (min)" value={cookTime} onChange={e => setCookTime(Number(e.target.value))} min={0} />
-            <Input id="serv" type="number" label="Rendimento" value={servings} onChange={e => setServings(Number(e.target.value))} min={1} />
+            <NumericInput id="prep" label="Preparo (min)" value={prepTime} onChange={setPrepTime} min={1} step={5} />
+            <NumericInput id="cook" label="Cozimento (min)" value={cookTime} onChange={setCookTime} min={0} step={5} />
+            <NumericInput id="serv" label="Rendimento" value={servings} onChange={setServings} min={1} />
             <Input id="unit" label="Unidade" placeholder="porções" value={servingUnit} onChange={e => setServUnit(e.target.value)} />
           </div>
         </FormSection>
@@ -233,12 +233,10 @@ export const RecipeFormContent = ({
                     <Trash2 size={14} />
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input id={`name-${ing.id}`} label="Ingrediente" placeholder="Ex: Farinha de trigo" value={ing.name} onChange={e => updateIngredient(ing.id, 'name', e.target.value)} />
-                  <div className="grid grid-cols-2 gap-1">
-                    <Input id={`qty-${ing.id}`} type="number" label="Qtd" value={ing.quantity} onChange={e => updateIngredient(ing.id, 'quantity', Number(e.target.value))} min={0} step={0.5} />
-                    <Input id={`unit-${ing.id}`} label="Unid." placeholder="g" value={ing.unit} onChange={e => updateIngredient(ing.id, 'unit', e.target.value)} />
-                  </div>
+                <Input id={`name-${ing.id}`} label="Ingrediente" placeholder="Ex: Farinha de trigo" value={ing.name} onChange={e => updateIngredient(ing.id, 'name', e.target.value)} />
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <NumericInput id={`qty-${ing.id}`} label="Quantidade" value={ing.quantity} onChange={val => updateIngredient(ing.id, 'quantity', val)} min={0} step={0.5} placeholder="0" />
+                  <Input id={`unit-${ing.id}`} label="Unidade" placeholder="g, ml, xíc..." value={ing.unit} onChange={e => updateIngredient(ing.id, 'unit', e.target.value)} className="w-24" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-cafe-muted mb-1.5">Estado</p>
@@ -277,8 +275,8 @@ export const RecipeFormContent = ({
                   )}
                 </div>
                 <Textarea id={`step-${step.id}`} placeholder="Descreva o passo..." value={step.description} onChange={e => updateStep(step.id, 'description', e.target.value)} rows={3} />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input id={`dur-${step.id}`} type="number" label="Duração (min)" placeholder="Opcional" value={step.durationMin ?? ''} onChange={e => updateStep(step.id, 'durationMin', e.target.value ? Number(e.target.value) : null)} min={0} />
+                <div className="space-y-2">
+                  <NumericInput id={`dur-${step.id}`} label="Duração (min) — opcional" value={step.durationMin ?? ''} onChange={val => updateStep(step.id, 'durationMin', val || null)} min={0} step={5} placeholder="Não informado" />
                   <Input id={`tip-${step.id}`} label="Dica (opcional)" placeholder="Ex: Não misture demais" value={step.tip ?? ''} onChange={e => updateStep(step.id, 'tip', e.target.value || null)} />
                 </div>
               </div>
@@ -311,7 +309,7 @@ export const RecipeFormContent = ({
           </div>
 
           <div>
-            <Input id="oven" type="number" label="Temperatura do forno (°C) — se aplicável" placeholder="Ex: 180" value={ovenTemp ?? ''} onChange={e => setOvenTemp(e.target.value ? Number(e.target.value) : null)} leftIcon={<Thermometer size={15} />} />
+            <NumericInput id="oven" label="Temperatura do forno (°C) — se aplicável" value={ovenTemp ?? ''} onChange={val => setOvenTemp(val || null)} min={0} max={300} step={10} placeholder="Ex: 180" leftIcon={<Thermometer size={15} />} />
           </div>
 
           <div>
@@ -325,8 +323,8 @@ export const RecipeFormContent = ({
               ))}
             </div>
             {storageMethod !== 'nao_armazenar' && (
-              <div className="grid grid-cols-2 gap-2">
-                <Input id="days" type="number" label="Validade (dias)" value={storageDays ?? ''} onChange={e => setStorageDays(e.target.value ? Number(e.target.value) : null)} min={1} />
+              <div className="space-y-3">
+                <NumericInput id="days" label="Validade (dias)" value={storageDays ?? ''} onChange={val => setStorageDays(val || null)} min={1} max={365} placeholder="Ex: 3" />
                 <Input id="stip" label="Dica de armazenamento" placeholder="Cubra com plástico filme" value={storageTip} onChange={e => setStorageTip(e.target.value)} />
               </div>
             )}
