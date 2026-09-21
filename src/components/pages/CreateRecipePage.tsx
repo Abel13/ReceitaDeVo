@@ -5,7 +5,7 @@ import {
   Thermometer, Camera, ChefHat, Package, BookOpen
 } from 'lucide-react'
 import { Button } from '@/components/atoms/Button'
-import { Input, Textarea, NumericInput } from '@/components/atoms'
+import { Input, Textarea, ComboInput, NumericInput } from '@/components/atoms'
 import { useCreateRecipeViewModel } from '@/viewmodels'
 import type { Ingredient, Recipe, RecipeStep, DifficultyLevel, StorageMethod, IngredientState } from '@/models'
 import { clsx } from 'clsx'
@@ -55,6 +55,15 @@ const INGREDIENT_STATES: { id: IngredientState; label: string }[] = [
   { id: 'gelado',               label: 'Gelado' },
   { id: 'derretido',            label: 'Derretido' },
   { id: 'cozido',               label: 'Cozido' },
+]
+
+const SERVING_UNITS = ['porções', 'fatias', 'pedaços', 'unidades', 'pessoas', 'porção']
+const INGREDIENT_UNITS = [
+  'g', 'kg', 'mg',
+  'ml', 'L', 'litro', 'litros',
+  'xícara', 'xícaras', 'colher (sopa)', 'colher (chá)', 'colher (sobremesa)',
+  'unidade', 'unidades', 'dente', 'dentes', 'pitada', 'punhado',
+  'a gosto', 'q.b.'
 ]
 
 const emptyIngredient = (index: number): Ingredient => ({
@@ -214,7 +223,7 @@ export const RecipeFormContent = ({
             <NumericInput id="prep" label="Preparo (min)" value={prepTime} onChange={setPrepTime} min={1} step={5} />
             <NumericInput id="cook" label="Cozimento (min)" value={cookTime} onChange={setCookTime} min={0} step={5} />
             <NumericInput id="serv" label="Rendimento" value={servings} onChange={setServings} min={1} />
-            <Input id="unit" label="Unidade" placeholder="porções" value={servingUnit} onChange={e => setServUnit(e.target.value)} />
+            <ComboInput id="unit" label="Unidade" placeholder="porções" value={servingUnit} onChange={e => setServUnit(e.target.value)} suggestions={SERVING_UNITS} />
           </div>
         </FormSection>
       )}
@@ -236,7 +245,7 @@ export const RecipeFormContent = ({
                 <Input id={`name-${ing.id}`} label="Ingrediente" placeholder="Ex: Farinha de trigo" value={ing.name} onChange={e => updateIngredient(ing.id, 'name', e.target.value)} />
                 <div className="grid grid-cols-[1fr_auto] gap-2">
                   <NumericInput id={`qty-${ing.id}`} label="Quantidade" value={ing.quantity} onChange={val => updateIngredient(ing.id, 'quantity', val)} min={0} step={0.5} placeholder="0" />
-                  <Input id={`unit-${ing.id}`} label="Unidade" placeholder="g, ml, xíc..." value={ing.unit} onChange={e => updateIngredient(ing.id, 'unit', e.target.value)} className="w-24" />
+                  <ComboInput id={`unit-${ing.id}`} label="Unidade" placeholder="g, ml, xíc..." value={ing.unit} onChange={e => updateIngredient(ing.id, 'unit', e.target.value)} suggestions={INGREDIENT_UNITS} className="w-24" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-cafe-muted mb-1.5">Estado</p>

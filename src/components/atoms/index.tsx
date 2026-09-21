@@ -328,3 +328,58 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   )
 )
 Textarea.displayName = 'Textarea'
+
+// ─────────────────────────────────────────────
+//  Atom: ComboInput
+// ─────────────────────────────────────────────
+interface ComboInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'list'> {
+  label?:       string
+  error?:       string
+  leftIcon?:    React.ReactNode
+  suggestions?: string[]
+}
+
+export const ComboInput = forwardRef<HTMLInputElement, ComboInputProps>(
+  ({ label, error, leftIcon, suggestions = [], className, id, ...props }, ref) => {
+    const listId = `${id}-suggestions`
+    
+    return (
+      <div className="flex flex-col gap-1">
+        {label && (
+          <label htmlFor={id} className="text-xs font-bold uppercase tracking-widest text-cafe-muted">
+            {label}
+          </label>
+        )}
+        <div className="relative">
+          {leftIcon && (
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-cafe-subtle">
+              {leftIcon}
+            </span>
+          )}
+          <input
+            ref={ref}
+            id={id}
+            list={suggestions.length > 0 ? listId : undefined}
+            className={clsx(
+              'w-full rounded-xl border bg-white py-2.5 text-sm text-cafe placeholder:text-cafe-subtle',
+              'transition-colors duration-150 focus-ring outline-none',
+              error ? 'border-red-400' : 'border-cafe/20 focus:border-terracota',
+              leftIcon ? 'pl-10 pr-4' : 'px-4',
+              className
+            )}
+            {...props}
+          />
+          {suggestions.length > 0 && (
+            <datalist id={listId}>
+              {suggestions.map((suggestion, idx) => (
+                <option key={idx} value={suggestion} />
+              ))}
+            </datalist>
+          )}
+        </div>
+        {error && <p className="text-xs text-red-500">{error}</p>}
+      </div>
+    )
+  }
+)
+ComboInput.displayName = 'ComboInput'
