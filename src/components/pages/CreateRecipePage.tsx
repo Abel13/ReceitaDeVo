@@ -11,6 +11,22 @@ import type { Ingredient, Recipe, RecipeStep, DifficultyLevel, StorageMethod, In
 import { clsx } from 'clsx'
 
 // ─────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────
+// Fallback UUID generator for browsers that don't support crypto.randomUUID()
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback for older mobile browsers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+// ─────────────────────────────────────────────
 //  Constantes do formulário
 // ─────────────────────────────────────────────
 type FormStep = 'info' | 'ingredientes' | 'preparo' | 'detalhes' | 'fotos'
@@ -42,12 +58,12 @@ const INGREDIENT_STATES: { id: IngredientState; label: string }[] = [
 ]
 
 const emptyIngredient = (index: number): Ingredient => ({
-  id: crypto.randomUUID(), name: '', quantity: 1, unit: 'g',
+  id: generateUUID(), name: '', quantity: 1, unit: 'g',
   state: 'cru', orderIndex: index, substitutes: [], affiliateUrl: null,
 })
 
 const emptyStep = (index: number): RecipeStep => ({
-  id: crypto.randomUUID(), orderIndex: index, description: '', durationMin: null, tip: null,
+  id: generateUUID(), orderIndex: index, description: '', durationMin: null, tip: null,
 })
 
 // ─────────────────────────────────────────────
@@ -436,7 +452,7 @@ const CreateRecipePage = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-6">
       <h1 className="font-display text-2xl text-cafe">Nova receita</h1>
       <RecipeFormContent
         onSubmit={handleSubmit}
