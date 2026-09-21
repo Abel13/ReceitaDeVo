@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useCallback } from 'react'
 import {
   Cake, Sandwich, Soup, Candy, Utensils, Beef,
-  Salad, GlassWater, ChefHat, ArrowLeft,
+  Salad, GlassWater, ChefHat, ArrowLeft, Popcorn,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { RecipeGrid } from '@/components/organisms'
@@ -23,6 +23,7 @@ const CATEGORIES = [
   { slug: 'carnes',   value: 'Carnes',   label: 'Carnes',   icon: Beef,       bg: 'bg-red-50',     border: 'border-red-200',    text: 'text-red-700',     iconBg: 'bg-red-100' },
   { slug: 'saladas',  value: 'Saladas',  label: 'Saladas',  icon: Salad,      bg: 'bg-green-50',   border: 'border-green-200',  text: 'text-green-700',   iconBg: 'bg-green-100' },
   { slug: 'bebidas',  value: 'Bebidas',  label: 'Bebidas',  icon: GlassWater, bg: 'bg-sky-50',     border: 'border-sky-200',    text: 'text-sky-700',     iconBg: 'bg-sky-100' },
+  { slug: 'petiscos', value: 'Petiscos', label: 'Petiscos', icon: Popcorn,    bg: 'bg-purple-50',  border: 'border-purple-200', text: 'text-purple-700',  iconBg: 'bg-purple-100' },
 ]
 
 const DIFFICULTY_FILTERS: { id: DifficultyLevel | ''; label: string }[] = [
