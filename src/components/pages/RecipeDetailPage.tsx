@@ -8,8 +8,9 @@ import { Button } from '@/components/atoms/Button'
 import { Badge, Avatar, Skeleton } from '@/components/atoms'
 import { StatPill, AffiliateLink } from '@/components/molecules'
 import { useRecipeDetailViewModel } from '@/viewmodels'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useUIStore } from '@/store'
 import { difficultyToBadge, difficultyLabel } from '@/components/atoms'
+import { useEffect } from 'react'
 
 // ─────────────────────────────────────────────
 //  Page: RecipeDetailPage
@@ -20,7 +21,61 @@ const RecipeDetailPage = () => {
   const { recipe, isLoading, isSaved, isLiked, toggleSaved, toggleLike } =
     useRecipeDetailViewModel(id!)
   const { user } = useAuthStore()
+  const { addToast } = useUIStore()
   const isAuthor = !!(user && recipe && user.uid === recipe.authorId)
+
+  // Atualizar meta tags OG quando a receita carregar
+  useEffect(() => {
+    if (recipe) {
+      const url = window.location.href
+      const imageUrl = recipe.photos[0] || '/icon.png'
+      
+      // Atualizar meta tags
+      updateMetaTag('og:title', recipe.title)
+      updateMetaTag('og:description', recipe.description || `Receita de ${recipe.authorName}`)
+      updateMetaTag('og:image', imageUrl)
+      updateMetaTag('og:url', url)
+      updateMetaTag('twitter:card', 'summary_large_image')
+      updateMetaTag('twitter:title', recipe.title)
+      updateMetaTag('twitter:description', recipe.description || `Receita de ${recipe.authorName}`)
+      updateMetaTag('twitter:image', imageUrl)
+      
+      // Atualizar título da página
+      document.title = `${recipe.title} - Receita de Vó`
+    }
+  }, [recipe])
+
+  const handleShare = async () => {
+    if (!recipe) return
+
+    const shareData = {
+      title: recipe.title,
+      text: recipe.description || `Confira essa receita de ${recipe.authorName}!`,
+      url: window.location.href,
+    }
+
+    // Verificar se Web Share API está disponível (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        addToast('Receita compartilhada!', 'success')
+      } catch (err) {
+        // Usuário cancelou o compartilhamento
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Erro ao compartilhar:', err)
+        }
+      }
+    } else {
+      // Fallback: copiar link
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        addToast('Link copiado para a área de transferência!', 'success')
+      } catch (err) {
+        console.error('Erro ao copiar link:', err)
+        addToast('Não foi possível copiar o link', 'error')
+      }
+    }
+  }
 
   if (isLoading) return <RecipeDetailSkeleton />
   if (!recipe)   return (
@@ -76,7 +131,7 @@ const RecipeDetailPage = () => {
               label="Salvar"
               onClick={toggleSaved}
             />
-            <IconAction icon={<Share2 size={18} />} label="Compartilhar" />
+            <IconAction icon={<Share2 size={18} />} label="Compartilhar" onClick={handleShare} />
           </div>
         </div>
 
@@ -267,5 +322,16 @@ const RecipeDetailSkeleton = () => (
     <Skeleton className="h-60 w-full" />
   </div>
 )
+
+// ── Helper para atualizar meta tags ──────────
+const updateMetaTag = (property: string, content: string) => {
+  let element = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement
+  if (!element) {
+    element = document.createElement('meta')
+    element.setAttribute('property', property)
+    document.head.appendChild(element)
+  }
+  element.content = content
+}
 
 export default RecipeDetailPage

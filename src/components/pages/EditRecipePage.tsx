@@ -20,7 +20,7 @@ const EditRecipePage = () => {
   }
 
   if (isLoading) return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="w-full max-w-2xl mx-auto space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-12 w-full" />
       <Skeleton className="h-64 w-full" />
@@ -34,7 +34,7 @@ const EditRecipePage = () => {
   )
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-6">
       <h1 className="font-display text-2xl text-cafe">Editar receita</h1>
       <RecipeFormContent
         key={recipe.id}
