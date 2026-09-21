@@ -106,7 +106,7 @@ export const RecipeFormContent = ({
   const updateIngredient = useCallback((id: string, field: keyof Ingredient, value: unknown) => {
     setIngredients(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   }, [])
-  const addIngredient    = () => setIngredients(prev => [...prev, emptyIngredient(prev.length)])
+  const addIngredient    = () => setIngredients(prev => [emptyIngredient(0), ...prev.map((ing, idx) => ({ ...ing, orderIndex: idx + 1 }))])
   const removeIngredient = (id: string) => setIngredients(prev => prev.filter(i => i.id !== id))
 
   const updateStep = useCallback((id: string, field: keyof RecipeStep, value: unknown) => {
