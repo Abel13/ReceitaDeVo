@@ -43,6 +43,36 @@ export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
     }
   }
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    const recipeUrl = `${window.location.origin}/receita/${recipe.id}`
+    const shareData = {
+      title: recipe.title,
+      text: recipe.description || `Confira essa receita de ${recipe.authorName}!`,
+      url: recipeUrl,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        addToast('Receita compartilhada!', 'success')
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Erro ao compartilhar:', err)
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(recipeUrl)
+        addToast('Link copiado!', 'success')
+      } catch (err) {
+        console.error('Erro ao copiar link:', err)
+        addToast('Não foi possível copiar o link', 'error')
+      }
+    }
+  }
+
   return (
     <article
       onClick={onClick}
@@ -105,7 +135,7 @@ export const RecipeCard = ({ recipe, onClick, className }: RecipeCardProps) => {
             onClick={handleLike}
           />
           <ActionButton icon={<MessageCircle size={13} />} label={String(recipe.commentsCount)} />
-          <ActionButton icon={<Share2 size={13} />} label="Compartilhar" />
+          <ActionButton icon={<Share2 size={13} />} label="Compartilhar" onClick={handleShare} />
         </div>
       </div>
     </article>
